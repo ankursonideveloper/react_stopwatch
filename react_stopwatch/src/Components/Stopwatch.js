@@ -1,16 +1,100 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react';
 
 const Stopwatch = (props) => {
-  return (
-    <div className='flex flex-col align-middle w-4/12 mx-auto mt-2 border-gray-300 bg-white border-2 rounded-xl p-5'>
-        <input></input>
-        <div className='flex flex-row justify-around'>
-            <button>Start</button>
-            <button>Pause</button>
-            <button>Reset</button>
-        </div>
-    </div>
-  )
-}
+  const [timeObject, setTimeObject] = useState({hour: "00", minute: "00", second: "00"});
+  const [isPause, setIsPause] = useState(true);
+  const stopWatchRef = useRef(null);
+  let timerRef = useRef(null);
+  
+  const incrementTime = (initialTime) =>{
+    let hour = parseInt(initialTime.hour);
+    let minute = parseInt(initialTime.minute);
+    let second = parseInt(initialTime.second);
 
-export default Stopwatch
+    if (second == "59" ){
+      if (minute == "59"){
+        hour = incrementByOne(hour);
+        minute = "00";
+        second = "00";
+      }
+      else{
+        hour = hour<9 ? "0" + hour.toString() : hour.toString();
+        minute = incrementByOne(minute);
+        second = "00";
+      }
+    }
+    else{
+      hour = hour<9 ? "0" + hour.toString() : hour.toString();
+      minute = minute<9 ? "0" + minute.toString() : minute.toString();
+      second = incrementByOne(second);
+    }
+     return {hour: hour, minute: minute, second: second};
+  }
+
+  const incrementByOne = num => { return num<9 ?  "0" + (num + 1).toString() : (num + 1).toString()};
+
+  const handleClickOnPauseButton = ()=>{
+    setIsPause(true);
+    clearInterval(timerRef.current);
+  }
+
+  const handleClickOnStartButton = ()=>{
+    setIsPause(false);
+  }
+
+  const handleClickOnResetButton = ()=>{
+    setIsPause(true);
+    setTimeObject({hour: "00", minute: "00", second: "00"});
+    clearInterval(timerRef.current);
+  }
+
+  useEffect(
+    ()=>{
+      if (!isPause){
+        if (timerRef.current){
+          clearInterval(timerRef.current);
+        }
+        timerRef.current = setInterval(()=>{
+        let hour = (stopWatchRef.current.value.split(":")[0]).trim();
+        let minute = (stopWatchRef.current.value.split(":")[1]).trim();
+        let second = (stopWatchRef.current.value.split(":")[2]).trim();
+        setTimeObject(incrementTime({hour: hour, minute: minute, second: second}));
+      },1000)
+      }
+    },[isPause]
+  )
+    
+  
+
+  return (
+    <div className="flex flex-col items-center w-full max-w-md mx-auto mt-8 bg-white border-2 border-gray-300 rounded-xl shadow-md p-6">
+      <input
+        type="text"
+        className="w-full text-center text-xl font-semibold border border-gray-300 rounded-md p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        placeholder="00:00:00"
+        value={`${timeObject.hour} : ${timeObject.minute} : ${timeObject.second}`}
+        ref={stopWatchRef}
+        readOnly
+      />
+
+      <div className="flex justify-between w-full gap-4">
+        <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-md transition duration-200"
+        onClick={handleClickOnStartButton}
+        disabled={!isPause}>
+          Start
+        </button>
+        <button className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 rounded-md transition duration-200"
+        onClick={handleClickOnPauseButton}
+        disabled={isPause}>
+          Pause
+        </button>
+        <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-md transition duration-200"
+        onClick={handleClickOnResetButton}>
+          Reset
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Stopwatch;
