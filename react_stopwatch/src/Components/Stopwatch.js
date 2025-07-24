@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 const Stopwatch = (props) => {
   const [timeObject, setTimeObject] = useState({hour: "00", minute: "00", second: "00"});
-  const [isPause, setIsPause] = useState(true);
+  const [stopwatchState, setStopWatchState] = useState('YETTOSTART');
+
   const stopWatchRef = useRef(null);
   let timerRef = useRef(null);
   
@@ -34,40 +35,39 @@ const Stopwatch = (props) => {
   const incrementByOne = num => { return num<9 ?  "0" + (num + 1).toString() : (num + 1).toString()};
 
   const handleClickOnPauseButton = ()=>{
-    setIsPause(true);
-    clearInterval(timerRef.current);
+      if (stopwatchState === 'START'){
+        setStopWatchState('PAUSE');
+      }
   }
 
   const handleClickOnStartButton = ()=>{
-    setIsPause(false);
-  }
+      setStopWatchState('START');
+    }
 
   const handleClickOnResetButton = ()=>{
-    setIsPause(true);
-    setTimeObject({hour: "00", minute: "00", second: "00"});
-    clearInterval(timerRef.current);
+      setTimeObject({hour: "00", minute: "00", second: "00"});
+      setStopWatchState('YETTOSTART');
   }
 
   useEffect(
-    ()=>{
-      if (!isPause){
-        if (timerRef.current){
-          clearInterval(timerRef.current);
+        ()=>{
+            if (timerRef.current){
+              clearInterval(timerRef.current);
+            }
+            if (stopwatchState === 'START'){
+            timerRef.current = setInterval(()=>{
+            let hour = (stopWatchRef.current.value.split(":")[0]).trim();
+            let minute = (stopWatchRef.current.value.split(":")[1]).trim();
+            let second = (stopWatchRef.current.value.split(":")[2]).trim();
+            setTimeObject(incrementTime({hour: hour, minute: minute, second: second}));
+          },1000)
+          }
         }
-        timerRef.current = setInterval(()=>{
-        let hour = (stopWatchRef.current.value.split(":")[0]).trim();
-        let minute = (stopWatchRef.current.value.split(":")[1]).trim();
-        let second = (stopWatchRef.current.value.split(":")[2]).trim();
-        setTimeObject(incrementTime({hour: hour, minute: minute, second: second}));
-      },1000)
-      }
-    },[isPause]
-  )
+    ,[stopwatchState])
     
-  
-
   return (
-    <div className="flex flex-col items-center w-full max-w-md mx-auto mt-8 bg-white border-2 border-gray-300 rounded-xl shadow-md p-6">
+    <div className="flex flex-col items-center w-6/12 mx-auto mt-8 bg-white border-2 border-gray-300 rounded-xl shadow-md p-6">
+      <p className='mb-3 font-extrabold text-black text-3xl' >Stopwatch</p>
       <input
         type="text"
         className="w-full text-center text-xl font-semibold border border-gray-300 rounded-md p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -78,18 +78,19 @@ const Stopwatch = (props) => {
       />
 
       <div className="flex justify-between w-full gap-4">
-        <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-md transition duration-200"
+        <button className={`flex-1 ${stopwatchState === 'START'? "bg-slate-400": "bg-blue-500"} text-white font-medium py-2 rounded-md flex-wrap`}
         onClick={handleClickOnStartButton}
-        disabled={!isPause}>
-          Start
+        disabled={stopwatchState === 'START'}>
+          {stopwatchState === 'START'? "Running":"Start"}
         </button>
-        <button className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 rounded-md transition duration-200"
+        <button className={`flex-1 ${stopwatchState !== 'START'? "bg-slate-400": "bg-yellow-500"} text-white font-medium py-2 rounded-md flex-wrap`}
         onClick={handleClickOnPauseButton}
-        disabled={isPause}>
-          Pause
+        disabled={stopwatchState !== 'START'}>
+          {stopwatchState === "PAUSE"?"Paused": "Pause"}
         </button>
-        <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-md transition duration-200"
-        onClick={handleClickOnResetButton}>
+        <button className={`flex-1 ${stopwatchState === 'YETTOSTART' ? "bg-slate-400": "bg-red-500"} text-white font-medium py-2 rounded-md flex-wrap`}
+        onClick={handleClickOnResetButton}
+        disabled={stopwatchState === 'YETTOSTART'}>
           Reset
         </button>
       </div>
