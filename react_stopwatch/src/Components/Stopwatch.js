@@ -77,7 +77,7 @@ const Stopwatch = (props) => {
         readOnly
       />
 
-      <div className="flex justify-between w-full gap-4">
+      <div className="flex flex-wrap justify-center w-full gap-4">
         <button className={`flex-1 ${stopwatchState === 'START'? "bg-slate-400": "bg-blue-500"} text-white font-medium py-2 rounded-md flex-wrap`}
         onClick={handleClickOnStartButton}
         disabled={stopwatchState === 'START'}>
